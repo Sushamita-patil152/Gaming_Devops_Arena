@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Hack - DEVOPS ARENA</title>
+    <!-- Same-folder link to style.css -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="game-header">
+        <!-- Two levels up takes you back to final/index.html -->
+        <a class="back-link" href="../../index.html">← Back to Arena</a>
+        <h1>TERMINAL HACK</h1>
+        <p>Click the hex codes in the target order before time runs out</p>
+    </header>
+
+    <main class="game-main">
+        <section class="game-panel">
+            <div class="hud">
+                <span>Round: <b id="round">1</b></span>
+                <span>Score: <b id="score">0</b></span>
+                <span>Moves: <b id="moves">0</b></span>
+                <span>Time: <b id="time">0</b>s</span>
+            </div>
+            
+            <div class="target" id="target"></div>
+            <div class="hex-grid" id="grid"></div>
+            <div id="message"></div>
+            
+            <div class="controls">
+                <button id="next" class="play-btn" hidden>Next Round</button>
+                <button id="restart" class="play-btn">Restart</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Same-folder link to script.js -->
+    <script src="script.js"></script>
+</body>
+</html>

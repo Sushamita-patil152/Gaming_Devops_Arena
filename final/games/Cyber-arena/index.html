@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CYBER ARENA — 3D Battle Royale</title>
+  <meta name="description" content="A high-octane 3D cyberpunk Battle Royale third-person shooter featuring procedural cyborg soldiers, neon arena, safe zone dynamics, and fluid tactical combat.">
+  <meta property="og:title" content="CYBER ARENA — 3D Battle Royale">
+  <meta property="og:description" content="A high-octane 3D cyberpunk Battle Royale third-person shooter featuring procedural cyborg soldiers, neon arena, safe zone dynamics, and fluid tactical combat.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <link rel="stylesheet" href="./style.css">
+  
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+  <!-- 3D Canvas Container -->
+  <div id="game-container"></div>
+
+  <!-- Screen Damage & Zone Glitch Overlays -->
+  <div id="damage-flash" class="vignette-overlay"></div>
+  <div id="zone-warning-overlay" class="vignette-overlay"></div>
+
+  <!-- Dynamic Reticle & Hit Feedback -->
+  <div id="crosshair-container">
+    <div class="reticle-dot"></div>
+    <div class="reticle-line reticle-top"></div>
+    <div class="reticle-line reticle-bottom"></div>
+    <div class="reticle-line reticle-left"></div>
+    <div class="reticle-line reticle-right"></div>
+    <div id="hit-marker" class="hit-marker">
+      <div class="hit-slash hit-slash-1"></div>
+      <div class="hit-slash hit-slash-2"></div>
+    </div>
+  </div>
+
+  <!-- In-Game Holographic HUD -->
+  <div id="hud">
+    <!-- Top Bar: Match Stats & Compass -->
+    <header class="hud-top-bar">
+      <div class="hud-widget hud-zone-card">
+        <div class="hud-badge danger-pulse" id="zone-status-badge">ZONE PROTOCOL</div>
+        <div class="hud-zone-timer">
+          <span class="hud-label">SHRINK IN</span>
+          <span class="hud-value hud-glow-cyan" id="zone-timer-text">02:00</span>
+        </div>
+      </div>
+
+      <div class="compass-widget">
+        <div class="compass-marker compass-n">N</div>
+        <div class="compass-marker compass-e">E</div>
+        <div class="compass-marker compass-s">S</div>
+        <div class="compass-marker compass-w">W</div>
+        <div class="compass-heading-text" id="compass-heading">000°</div>
+        <div class="compass-safe-arrow" id="compass-zone-arrow" title="Safe Zone Direction">▲</div>
+      </div>
+
+      <div class="hud-widget hud-score-card">
+        <div class="stat-pill">
+          <span class="hud-label">ALIVE</span>
+          <span class="hud-val-bold hud-glow-yellow" id="hud-alive-count">16</span>
+        </div>
+        <div class="stat-pill">
+          <span class="hud-label">ELIMS</span>
+          <span class="hud-val-bold hud-glow-magenta" id="hud-kill-count">0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Top Right: Minimap Radar & Tactical Feed -->
+    <div class="hud-radar-zone">
+      <div class="minimap-frame">
+        <div class="minimap-header">TACTICAL RADAR</div>
+        <canvas id="minimap-canvas" width="160" height="160"></canvas>
+        <div class="minimap-legend">
+          <span><i class="dot dot-player"></i> YOU</span>
+          <span><i class="dot dot-enemy"></i> HOSTILE</span>
+          <span><i class="dot dot-zone"></i> SAFE</span>
+        </div>
+      </div>
+
+      <div id="kill-feed" class="kill-feed-container"></div>
+    </div>
+
+    <!-- Center Interaction / Action Prompt -->
+    <div id="interaction-prompt" class="interaction-prompt">
+      <span class="key-badge">E</span> <span id="prompt-text">PICK UP WEAPON</span>
+    </div>
+
+    <!-- Center Critical Warning -->
+    <div id="storm-warning" class="storm-warning-banner">
+      ⚠ OUTSIDE SAFE ZONE // SUFFERING INTEGRITY DAMAGE ⚠
+    </div>
+
+    <!-- Bottom HUD: Status & Arsenal -->
+    <footer class="hud-bottom-bar">
+      <!-- Vitals (Health & Armor) -->
+      <div class="hud-vitals-card">
+        <div class="vitals-header">
+          <span class="system-status" id="system-status">ARMOR INTEGRITY // OPERATIONAL</span>
+          <span class="level-indicator">SYS-REV 7.2</span>
+        </div>
+
+        <!-- Health Bar -->
+        <div class="bar-container health-bar-container">
+          <div class="bar-meta">
+            <span class="bar-title">HEALTH</span>
+            <span class="bar-number" id="health-value">100 / 100</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill bar-health-fill" id="health-bar-fill" style="width: 100%;"></div>
+          </div>
+        </div>
+
+        <!-- Shield / Armor Bar -->
+        <div class="bar-container armor-bar-container">
+          <div class="bar-meta">
+            <span class="bar-title">SHIELD</span>
+            <span class="bar-number" id="armor-value">100 / 100</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill bar-armor-fill" id="armor-bar-fill" style="width: 100%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Weapon Slots (1, 2, 3) -->
+      <div class="hud-weapon-slots">
+        <div class="weapon-slot active" id="slot-1" data-slot="0">
+          <span class="slot-num">1</span>
+          <span class="slot-name" id="slot-1-name">PLASMA AR</span>
+        </div>
+        <div class="weapon-slot" id="slot-2" data-slot="1">
+          <span class="slot-num">2</span>
+          <span class="slot-name" id="slot-2-name">SCATTERGUN</span>
+        </div>
+        <div class="weapon-slot" id="slot-3" data-slot="2">
+          <span class="slot-num">3</span>
+          <span class="slot-name" id="slot-3-name">PULSE PISTOL</span>
+        </div>
+      </div>
+
+      <!-- Active Weapon Details & Ammunition -->
+      <div class="hud-arsenal-card">
+        <div class="weapon-title-row">
+          <span class="active-weapon-name" id="active-weapon-name">PLASMA ASSAULT RIFLE</span>
+          <span class="fire-mode" id="active-fire-mode">FULL AUTO</span>
+        </div>
+
+        <div class="ammo-counter-row">
+          <div class="ammo-numbers">
+            <span class="ammo-current hud-glow-cyan" id="ammo-current">32</span>
+            <span class="ammo-divider">/</span>
+            <span class="ammo-reserve" id="ammo-reserve">160</span>
+          </div>
+          <div class="reload-indicator" id="reload-indicator">
+            <div class="reload-bar" id="reload-bar"></div>
+            <span class="reload-text" id="reload-text">READY</span>
+          </div>
+        </div>
+
+        <div class="hud-controls-hint">
+          <span>[R] RELOAD</span> • <span>[R-CLICK] AIM</span> • <span>[SHIFT] SPRINT</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Start / Main Menu Screen -->
+  <div id="start-screen" class="menu-overlay active">
+    <div class="menu-backdrop"></div>
+    <div class="menu-content cyber-panel">
+      <div class="brand-header">
+        <div class="brand-tag">DEVOPS PROTOCOL // ARENA SIMULATION</div>
+        <h1 class="brand-title">CYBER <span class="neon-magenta">ARENA</span></h1>
+        <p class="brand-subtitle">3D FUTURISTIC BATTLE ROYALE COMBAT</p>
+      </div>
+
+      <div class="menu-config-grid">
+        <div class="config-card">
+          <label class="config-label">OPERATIVE COUNT</label>
+          <div class="btn-group" id="bot-count-selector">
+            <button class="cyber-btn-small" data-bots="8">8 BOTS</button>
+            <button class="cyber-btn-small active" data-bots="16">16 BOTS</button>
+            <button class="cyber-btn-small" data-bots="24">24 BOTS</button>
+          </div>
+        </div>
+
+        <div class="config-card">
+          <label class="config-label">COMBAT DIFFICULTY</label>
+          <div class="btn-group" id="difficulty-selector">
+            <button class="cyber-btn-small active" data-diff="standard">STANDARD</button>
+            <button class="cyber-btn-small" data-diff="hardcore">CYBER-ELITE</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="instructions-card">
+        <div class="inst-grid">
+          <div class="inst-item"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>Move</span></div>
+          <div class="inst-item"><kbd>MOUSE</kbd><span>Aim Camera</span></div>
+          <div class="inst-item"><kbd>L-CLICK</kbd><span>Fire Weapon</span></div>
+          <div class="inst-item"><kbd>R-CLICK</kbd><span>Aim Down Sight (ADS)</span></div>
+          <div class="inst-item"><kbd>SPACE</kbd><span>Jump</span></div>
+          <div class="inst-item"><kbd>SHIFT</kbd><span>Sprint</span></div>
+          <div class="inst-item"><kbd>C</kbd><span>Crouch</span></div>
+          <div class="inst-item"><kbd>R</kbd><span>Reload</span></div>
+          <div class="inst-item"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><span>Switch Arsenal</span></div>
+          <div class="inst-item"><kbd>E</kbd><span>Pickup Crate</span></div>
+        </div>
+      </div>
+
+      <button id="btn-start" class="cyber-btn cyber-btn-primary">
+        <span class="btn-glow"></span>
+        <span class="btn-text">DEPLOY TO ARENA</span>
+      </button>
+
+      <div class="audio-notice">♪ Web Audio synthesis enabled • Click to lock cursor and enter combat</div>
+    </div>
+  </div>
+
+  <!-- Pause Menu Screen -->
+  <div id="pause-screen" class="menu-overlay">
+    <div class="menu-backdrop"></div>
+    <div class="menu-content cyber-panel">
+      <h2 class="menu-title">SIMULATION <span class="neon-cyan">PAUSED</span></h2>
+      <p class="menu-desc">NEURAL LINK SUSPENDED</p>
+
+      <div class="settings-panel">
+        <div class="setting-row">
+          <span class="setting-name">MOUSE SENSITIVITY</span>
+          <input type="range" id="sensitivity-slider" min="0.5" max="3.0" step="0.1" value="1.2">
+          <span id="sensitivity-val" class="setting-val">1.2</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-name">SYNTH AUDIO FX</span>
+          <button id="btn-toggle-audio" class="cyber-btn-small active">ENABLED</button>
+        </div>
+      </div>
+
+      <div class="menu-actions">
+        <button id="btn-resume" class="cyber-btn cyber-btn-primary">RESUME COMBAT</button>
+        <button id="btn-pause-restart" class="cyber-btn cyber-btn-secondary">ABORT & RESTART</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div id="game-over-screen" class="menu-overlay">
+    <div class="menu-backdrop"></div>
+    <div class="menu-content cyber-panel defeat-panel">
+      <div class="status-tag danger-tag">SYSTEM FAILURE</div>
+      <h2 class="menu-title text-magenta">ELIMINATED</h2>
+      <p class="menu-desc">TACTICAL CHASSIS DEFEATED IN THE ARENA</p>
+
+      <div class="stats-summary-card">
+        <div class="stat-block">
+          <span class="stat-num" id="end-placement">#7</span>
+          <span class="stat-lbl">FINAL RANK</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-num text-magenta" id="end-kills">0</span>
+          <span class="stat-lbl">ELIMINATIONS</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-num text-cyan" id="end-damage">0</span>
+          <span class="stat-lbl">DAMAGE DEALT</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-num" id="end-time">00:00</span>
+          <span class="stat-lbl">SURVIVAL TIME</span>
+        </div>
+      </div>
+
+      <button id="btn-restart-gameover" class="cyber-btn cyber-btn-primary">
+        REDEPLOY TO ARENA
+      </button>
+    </div>
+  </div>
+
+  <!-- Victory Screen -->
+  <div id="victory-screen" class="menu-overlay">
+    <div class="menu-backdrop"></div>
+    <div class="menu-content cyber-panel victory-panel">
+      <div class="status-tag victory-tag">CHAMPION DESIGNATION</div>
+      <h2 class="menu-title text-yellow">VICTORY ROYALE</h2>
+      <p class="menu-desc">LAST CYBERNETIC SOLDIER STANDING</p>
+
+      <div class="stats-summary-card victory-stats">
+        <div class="stat-block">
+          <span class="stat-num text-yellow">#1</span>
+          <span class="stat-lbl">RANK</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-num text-magenta" id="vic-kills">0</span>
+          <span class="stat-lbl">ELIMINATIONS</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-num text-cyan" id="vic-damage">0</span>
+          <span class="stat-lbl">DAMAGE DEALT</span>
+        </div>
+        <div class="stat-block">
+          <span class="stat-num" id="vic-time">00:00</span>
+          <span class="stat-lbl">COMBAT DURATION</span>
+        </div>
+      </div>
+
+      <button id="btn-restart-victory" class="cyber-btn cyber-btn-primary victory-btn">
+        ENTER NEXT TOURNAMENT
+      </button>
+    </div>
+  </div>
+
+  <!-- Click to Lock Cursor Notification -->
+  <div id="click-to-focus" class="click-to-focus">
+    CLICK TO ENGAGE NEURAL CONTROL [LOCK MOUSE]
+  </div>
+
+  <!-- Primary Game Script -->
+  <script src="./script.js"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
