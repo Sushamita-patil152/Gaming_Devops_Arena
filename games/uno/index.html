@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNO Card Game - Neon Cyber Deluxe</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Arcade & Modern Cyber UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <!-- Neon Theme Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen text-white flex flex-col justify-between p-2 md:p-6 select-none">
+
+  <!-- Top Navigation & Scoreboard -->
+  <header class="w-full max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 glass-card rounded-2xl shadow-2xl z-20">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-fuchsia-600 to-yellow-400 p-0.5 shadow-[0_0_15px_rgba(0,240,255,0.6)] flex items-center justify-center">
+        <span class="font-uno text-2xl text-black tracking-wider drop-shadow">U</span>
+      </div>
+      <div>
+        <h1 class="font-cyber text-lg md:text-xl font-black text-cyan-400 tracking-widest drop-shadow-[0_0_8px_rgba(0,240,255,0.8)] leading-none">NEON UNO</h1>
+        <span class="text-[10px] text-fuchsia-400 font-bold tracking-widest uppercase">CYBER BOT DUEL</span>
+      </div>
+    </div>
+
+    <!-- Active Status Log -->
+    <div id="game-status-banner" class="text-xs md:text-sm font-bold bg-black/70 px-4 py-1.5 rounded-full border border-cyan-500/40 text-cyan-300 tracking-wider text-center truncate max-w-md shadow-[0_0_10px_rgba(0,240,255,0.2)]">
+      SYSTEM INITIALIZED // YOUR TURN
+    </div>
+
+    <!-- Control Buttons -->
+    <div class="flex items-center gap-2">
+      <button id="sound-toggle-btn" class="px-3 py-1.5 rounded-xl bg-cyan-950/70 hover:bg-cyan-900/80 text-xs font-cyber font-bold tracking-wider text-cyan-300 transition flex items-center gap-1.5 border border-cyan-500/40 shadow-[0_0_8px_rgba(0,240,255,0.2)]">
+        <span id="sound-icon">🔊</span> AUDIO
+      </button>
+      <button id="restart-game-btn" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-cyber text-xs font-bold tracking-wider transition shadow-[0_0_15px_rgba(255,0,85,0.5)]">
+        RESET
+      </button>
+    </div>
+  </header>
+
+  <main class="w-full max-w-6xl mx-auto felt-table my-3 md:my-5 p-3 md:p-6 flex flex-col justify-between flex-grow min-h-[580px] md:min-h-[640px] relative overflow-hidden">
+    
+    <!-- AI Opponent Zone -->
+    <div class="flex flex-col items-center justify-center relative z-10">
+      <div id="ai-avatar-badge" class="flex items-center gap-3 bg-black/70 px-4 py-1.5 rounded-full border border-cyan-500/30 mb-2 transition-all duration-300">
+        <div class="w-7 h-7 rounded-full bg-cyan-500/20 border border-cyan-400 flex items-center justify-center font-bold text-xs shadow-[0_0_8px_rgba(0,240,255,0.5)]">🤖</div>
+        <div class="flex flex-col">
+          <span class="text-xs font-bold font-cyber text-gray-200">CyberBot AI</span>
+          <span id="ai-card-count" class="text-[11px] text-cyan-400 font-mono">7 CARDS</span>
+        </div>
+        <div id="ai-thinking" class="hidden text-xs text-fuchsia-400 animate-pulse font-cyber font-bold ml-1">THINKING...</div>
+      </div>
+
+      <!-- AI Hand Container -->
+      <div id="ai-hand-container" class="flex justify-center -space-x-8 md:-space-x-10 overflow-hidden max-w-full px-4 py-2"></div>
+    </div>
+
+    <!-- Center Play Field -->
+    <div class="flex items-center justify-center gap-6 md:gap-14 my-auto relative z-10">
+      
+      <!-- Draw Pile -->
+      <div class="flex flex-col items-center gap-1.5">
+        <div id="draw-deck" class="uno-card bg-uno-back cursor-pointer relative shadow-2xl transition duration-200" title="Click to Draw a Card">
+          <div class="uno-card-inner flex items-center justify-center">
+            <div class="uno-oval bg-red-600/90 !rotate-[-30deg] border-2 border-yellow-400 flex items-center justify-center shadow-[0_0_12px_rgba(255,0,85,0.6)]">
+              <span class="font-uno text-yellow-300 text-lg md:text-xl transform rotate-[30deg] drop-shadow-[0_0_6px_#ffe600]">UNO</span>
+            </div>
+          </div>
+          <!-- Stack Visual Layers -->
+          <div class="absolute -top-1.5 -left-1.5 w-full h-full bg-cyan-950/60 rounded-[12px] -z-10 border border-cyan-500/40 pointer-events-none"></div>
+          <div class="absolute -top-3 -left-3 w-full h-full bg-fuchsia-950/40 rounded-[12px] -z-20 border border-fuchsia-500/30 pointer-events-none"></div>
+        </div>
+        <span class="text-[10px] font-cyber font-bold text-cyan-300 tracking-widest bg-black/70 px-2.5 py-0.5 rounded-full border border-cyan-500/30">DRAW PILE</span>
+      </div>
+
+      <!-- Discard Pile Top Card -->
+      <div class="flex flex-col items-center gap-1.5">
+        <div id="discard-pile" class="relative"></div>
+        <span class="text-[10px] font-cyber font-bold text-cyan-300 tracking-widest bg-black/70 px-2.5 py-0.5 rounded-full border border-cyan-500/30">DISCARD</span>
+      </div>
+
+      <!-- Active Color Indicator -->
+      <div class="flex flex-col items-center gap-1.5 bg-black/75 backdrop-blur-md px-3.5 py-3 rounded-2xl border border-cyan-500/30 shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+        <span class="text-[10px] uppercase font-cyber font-bold tracking-widest text-gray-400">Target Color</span>
+        <div id="active-color-badge" class="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white shadow-[0_0_15px_currentColor] transition-transform duration-500 scale-100 bg-red-500"></div>
+        <span id="active-color-name" class="font-cyber font-bold text-xs tracking-wider text-white">RED</span>
+      </div>
+
+    </div>
+
+    <!-- Human Player Zone -->
+    <div class="flex flex-col items-center justify-end relative z-10">
+      
+      <!-- Player Info & UNO Shout Button -->
+      <div class="flex items-center justify-between w-full max-w-2xl px-4 mb-2">
+        <div id="player-avatar-badge" class="flex items-center gap-2 bg-black/70 px-4 py-1 rounded-full border border-cyan-500/30">
+          <div class="w-6 h-6 rounded-full bg-cyan-400/20 border border-cyan-400 flex items-center justify-center font-bold text-xs text-cyan-300 shadow-[0_0_6px_rgba(0,240,255,0.6)]">👤</div>
+          <span class="text-xs font-bold font-cyber text-gray-200">Player</span>
+          <span id="player-card-count" class="text-[11px] text-yellow-400 font-mono">7 CARDS</span>
+        </div>
+
+        <!-- Call UNO Button -->
+        <button id="call-uno-btn" class="hidden px-5 py-2 rounded-2xl font-cyber font-black text-sm md:text-base tracking-widest bg-gradient-to-r from-yellow-400 via-pink-500 to-cyan-400 hover:brightness-125 active:scale-95 text-black shadow-[0_0_25px_rgba(255,230,0,0.8)] border-2 border-white animate-bounce">
+          CALL UNO!
+        </button>
+      </div>
+
+      <!-- Human Hand Container -->
+      <div id="player-hand" class="flex justify-center items-end -space-x-7 md:-space-x-9 overflow-x-auto max-w-full px-6 py-4 pb-2 scrollbar-none transition-all"></div>
+      <div class="text-[11px] text-cyan-300/80 mt-1 font-mono tracking-wide">CLICK ON GLOWING NEON CARDS TO EXECUTE PLAY</div>
+    </div>
+
+    <!-- Floating Background Neon Logo Accent -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
+      <span class="font-cyber font-black text-[140px] md:text-[220px] text-cyan-400 blur-sm">NEON</span>
+    </div>
+  </main>
+
+  <!-- Wild Card Color Picker Modal -->
+  <div id="color-picker-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-gray-950 border-2 border-cyan-400 p-6 md:p-8 rounded-3xl text-center shadow-[0_0_40px_rgba(0,240,255,0.4)] max-w-sm w-full mx-4 transform scale-95 transition-transform duration-200">
+      <h3 class="font-cyber font-black text-xl md:text-2xl text-cyan-400 mb-1 tracking-wider drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]">SELECT FREQUENCY</h3>
+      <p class="text-xs text-gray-400 mb-6 font-mono">Choose next designated active color:</p>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <button data-color="Red" class="color-select-btn h-20 rounded-2xl bg-gradient-to-br from-pink-600 to-rose-700 border-2 border-white font-cyber font-bold text-lg tracking-widest hover:scale-105 active:scale-95 transition shadow-[0_0_15px_rgba(255,0,85,0.7)] flex items-center justify-center">
+          RED
+        </button>
+        <button data-color="Blue" class="color-select-btn h-20 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 border-2 border-white font-cyber font-bold text-lg tracking-widest hover:scale-105 active:scale-95 transition shadow-[0_0_15px_rgba(0,229,255,0.7)] flex items-center justify-center text-black">
+          BLUE
+        </button>
+        <button data-color="Yellow" class="color-select-btn h-20 rounded-2xl bg-gradient-to-br from-yellow-300 to-amber-500 border-2 border-white font-cyber font-bold text-lg tracking-widest hover:scale-105 active:scale-95 transition shadow-[0_0_15px_rgba(255,230,0,0.7)] flex items-center justify-center text-black">
+          YELLOW
+        </button>
+        <button data-color="Green" class="color-select-btn h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-green-600 border-2 border-white font-cyber font-bold text-lg tracking-widest hover:scale-105 active:scale-95 transition shadow-[0_0_15px_rgba(0,255,136,0.7)] flex items-center justify-center text-black">
+          GREEN
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Modal -->
+  <div id="game-over-modal" class="fixed inset-0 bg-black/90 backdrop-blur-lg z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-gray-950 border-2 border-cyan-400 p-8 rounded-3xl text-center shadow-[0_0_60px_rgba(0,240,255,0.5)] max-w-md w-full mx-4 transform scale-90 transition-transform duration-300">
+      <div id="game-over-emoji" class="text-6xl mb-3">🏆</div>
+      <h2 id="game-over-title" class="font-cyber font-black text-3xl text-cyan-400 mb-2 tracking-widest drop-shadow-[0_0_10px_rgba(0,240,255,0.8)]">YOU WIN!</h2>
+      <p id="game-over-desc" class="text-sm text-gray-300 mb-6 font-mono">Opponent defeated! Zero cards remaining.</p>
+      
+      <div class="bg-black/60 rounded-xl p-4 mb-6 border border-cyan-500/30 text-xs space-y-1 font-mono">
+        <div class="flex justify-between"><span>Winner:</span><span id="summary-winner" class="text-cyan-300 font-bold">Player</span></div>
+        <div class="flex justify-between"><span>Opponent Remaining:</span><span id="summary-opponent-cards" class="text-fuchsia-400 font-bold">4 cards</span></div>
+      </div>
+
+      <button id="modal-restart-btn" class="w-full py-3.5 rounded-2xl font-cyber font-black text-base tracking-widest bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-yellow-400 hover:brightness-125 text-black shadow-[0_0_25px_rgba(0,240,255,0.7)] active:scale-98 transition">
+        PLAY AGAIN
+      </button>
+    </div>
+  </div>
+
+  <!-- Game Logic Script -->
+  <script src="script.js"></script>
+</body>
+</html>

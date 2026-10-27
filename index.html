@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOps Arena - Play • Build • Deploy</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <!-- Ambient glowing background lights -->
+  <div class="glow-orb orb-cyan"></div>
+  <div class="glow-orb orb-magenta"></div>
+
+  <div class="arena-container">
+    <!-- Header Section -->
+    <header class="hub-header">
+      <div class="logo-group">
+        <div class="logo-icon">
+          <i class="fa-solid fa-gamepad"></i>
+        </div>
+        <div class="title-wrap">
+          <h1 class="brand-title">DEVOPS <span class="highlight">ARENA</span></h1>
+          <p class="tagline">PLAY &bull; BUILD &bull; DEPLOY</p>
+        </div>
+      </div>
+
+      <!-- Live Pipeline Deployment Status Badge -->
+      <div class="live-status-pill">
+        <div class="status-top">
+          <span class="pulsing-dot"></span>
+          <span class="status-text">LIVE ON AWS</span>
+        </div>
+        <div class="status-bottom">
+          <span>Build #12 | v1.2.0</span>
+          <span>Commit: <code id="commitHash">a9f83c1</code></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Game Selection Grid -->
+    <main class="games-grid">
+      
+      <!-- Card 1: Cyber-arena -->
+      <div class="game-card theme-cyan" data-game="Cyber-arena">
+        <div class="thumbnail-wrapper">
+          <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=700&q=80" alt="Cyber-Arena">
+          <div class="card-overlay"></div>
+          <span class="badge">3D SURVIVAL</span>
+        </div>
+        <div class="card-details">
+          <h3 class="game-title">Cyber-Arena</h3>
+          <p class="game-desc">Survive &bull; Loot &bull; Be the last</p>
+          <a href="games/Cyber-arena/index.html" class="btn-play btn-cyan">PLAY NOW</a>
+        </div>
+      </div>
+
+      <!-- Card 2: Retro Racer -->
+      <div class="game-card theme-blue" data-game="retro-racer">
+        <div class="thumbnail-wrapper">
+          <img src="https://imgs.crazygames.com/car-games-car-racing-game_16x9/20240628180656/car-games-car-racing-game_16x9-cover?metadata=none&quality=60&height=3639" alt="Retro Racer">
+          <div class="card-overlay"></div>
+          <span class="badge">HIGH SPEED</span>
+        </div>
+        <div class="card-details">
+          <h3 class="game-title">RETRO RACER</h3>
+          <p class="game-desc">Speed &bull; Drift &bull; Win</p>
+          <a href="games/retro-racer/index.html" class="btn-play btn-amber">PLAY NOW</a>
+        </div>
+      </div>
+
+      <!-- Card 3: UNO -->
+      <div class="game-card theme-magenta" data-game="UNO">
+        <div class="thumbnail-wrapper">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoP4ypeeMKE84T1Ze-LaxVBkmVVHR6_r4KwkvJY24IR_Iw8Zf9u-YLHaG3&s=10" alt="UNO">
+          <div class="card-overlay"></div>
+          <span class="badge">QUICK DRAW</span>
+        </div>
+        <div class="card-details">
+          <h3 class="game-title">UNO</h3>
+          <p class="game-desc">Draw &bull; Match &bull; Shout</p>
+          <a href="games/uno/index.html" class="btn-play btn-magenta">PLAY NOW</a>
+        </div>
+      </div>
+
+      <!-- Card 4: Terminal Hack -->
+      <div class="game-card theme-green" data-game="terminal-hack">
+        <div class="thumbnail-wrapper">
+          <img src="https://repository-images.githubusercontent.com/1008793514/be880c7d-6a62-4e58-966d-c5a80e04603e" alt="Terminal Hack">
+          <div class="card-overlay"></div>
+          <span class="badge">LOGIC PUZZLE</span>
+        </div>
+        <div class="card-details">
+          <h3 class="game-title">TERMINAL HACK</h3>
+          <p class="game-desc">Think &bull; Decode &bull; Escape</p>
+          <a href="games/terminal-hack/index.html" class="btn-play btn-green">PLAY NOW</a>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="hub-footer">
+      <p>&copy; DevOps Arena | Powered by HTML5, CSS, JavaScript | Deployed on AWS EC2</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@600;700&display=swap');
+
+:root {
+    --bg-dark: #060913;
+    --neon-amber: #ff9900;
+    --neon-cyan: #00f0ff;
+    --neon-purple: #a855f7;
+    --text-white: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body {
+    background-color: var(--bg-dark);
+    font-family: 'Rajdhani', sans-serif;
+    color: var(--text-white);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Header HUD */
+header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 20;
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none; /* Let canvas clicks pass through */
+}
+
+/* Top-Left Back Link */
+.back-link {
+    position: absolute;
+    top: 1rem;
+    left: 1.5rem;
+    pointer-events: auto; /* Enable clicking */
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.5rem 1rem;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 1px;
+    color: var(--neon-amber);
+    background: rgba(6, 9, 19, 0.85);
+    border: 1px solid rgba(255, 153, 0, 0.45);
+    border-radius: 8px;
+    box-shadow: 0 0 12px rgba(255, 153, 0, 0.2);
+    backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+}
+
+.back-link:hover {
+    color: #000;
+    background: var(--neon-amber);
+    box-shadow: 0 0 20px rgba(255, 153, 0, 0.7);
+    transform: translateY(-2px);
+}
+
+/* Titles */
+h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: #ffffff;
+    text-shadow: 0 0 12px rgba(168, 85, 247, 0.9), 0 0 24px rgba(168, 85, 247, 0.5);
+    margin-bottom: 0.2rem;
+}
+
+header p {
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.8rem;
+}
+
+/* Stats Pill */
+.stats {
+    display: flex;
+    gap: 1.2rem;
+    background: rgba(8, 12, 26, 0.75);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    padding: 0.4rem 1.6rem;
+    border-radius: 30px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+}
+
+.stats div {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #ffffff;
+}
+
+/* 3D Game Container (Takes Full Screen) */
+#game-container {
+    position: absolute;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+}
+
+#game-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+
+/* Floating Overlay Message (Game Over / Paused) */
+#message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 30;
+    pointer-events: none;
+    display: none; /* Controlled by script.js */
+}
+
+#message-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3.2rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #ffffff;
+    text-shadow: 0 0 15px rgba(168, 85, 247, 0.9), 0 0 35px rgba(168, 85, 247, 0.6);
+    margin-bottom: 0.5rem;
+}
+
+#message-text {
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Footer Bottom Controls */
+.controls {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    z-index: 20;
+}
+
+.controls button {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 0.6rem 1.6rem;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    background: #8b22e2;
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(139, 34, 226, 0.5);
+    transition: all 0.2s ease;
+}
+
+.controls button:hover {
+    transform: translateY(-2px);
+    background: #9d3bf0;
+    box-shadow: 0 0 25px rgba(157, 59, 240, 0.8);
+}
+
+.controls button:active {
+    transform: scale(0.96);
+}
