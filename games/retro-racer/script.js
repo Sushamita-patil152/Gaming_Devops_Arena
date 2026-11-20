@@ -1,436 +1,560 @@
 
-import * as THREE from
-    "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
-// ================= GAME SETUP =================
+
+// ======================================
+// RETRO RACER 3D - MIDNIGHT NEON
+// All objects are generated using 3D shapes
+// ======================================
 
 const container = document.getElementById("game-container");
-const scoreElement = document.getElementById("score");
-const coinsElement = document.getElementById("coins");
-const speedElement = document.getElementById("speed");
+
+const scoreEl = document.getElementById("score");
+const coinsEl = document.getElementById("coins");
+const speedEl = document.getElementById("speed");
+
 const message = document.getElementById("message");
 const messageTitle = document.getElementById("message-title");
 const messageText = document.getElementById("message-text");
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x10152b);
-scene.fog = new THREE.Fog(0x10152b, 65, 190);
+scene.background = new THREE.Color(0x05091c);
+scene.fog = new THREE.Fog(0x080b25, 65, 190);
 
 const camera = new THREE.PerspectiveCamera(
-    60,
-    container.clientWidth / container.clientHeight,
+    65,
+    window.innerWidth / window.innerHeight,
     0.1,
-    300
+    400
 );
 
-camera.position.set(0, 8, 15);
-camera.lookAt(0, 1, -22);
+camera.position.set(0, 9, 17);
+camera.lookAt(0, 2, -22);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
 
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.3;
 
 container.appendChild(renderer.domElement);
 
-function resizeGame() {
+function resize() {
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    if (!width || !height) return;
-
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
+
     renderer.setSize(width, height);
 }
 
-window.addEventListener("resize", resizeGame);
-resizeGame();
+window.addEventListener("resize", resize);
+resize();
 
-// ================= LIGHTING =================
+// ======================================
+// LIGHTING
+// ======================================
 
-scene.add(
-    new THREE.HemisphereLight(0xc6d8ff, 0x17152d, 2)
-);
+scene.add(new THREE.HemisphereLight(0x8dbaff, 0x100520, 2.5));
 
-const sunlight = new THREE.DirectionalLight(0xffffff, 2.2);
-sunlight.position.set(-15, 30, 15);
-sunlight.castShadow = true;
-scene.add(sunlight);
+const mainLight = new THREE.DirectionalLight(0xffffff, 2);
+mainLight.position.set(-10, 25, 15);
+mainLight.castShadow = true;
+scene.add(mainLight);
 
-// Neon lights
-const purpleLight = new THREE.PointLight(0x9b4dff, 35, 45);
-purpleLight.position.set(-8, 5, -15);
+const purpleLight = new THREE.PointLight(0xc000ff, 100, 80);
+purpleLight.position.set(-9, 8, -20);
 scene.add(purpleLight);
 
-const blueLight = new THREE.PointLight(0x168bff, 30, 45);
-blueLight.position.set(8, 5, -30);
+const blueLight = new THREE.PointLight(0x0088ff, 100, 80);
+blueLight.position.set(9, 8, -30);
 scene.add(blueLight);
 
-// ================= MATERIALS =================
+// ======================================
+// MATERIALS
+// ======================================
 
-const groundMaterial = new THREE.MeshStandardMaterial({
-    color: 0x101322,
-    roughness: 0.9
+const roadMat = new THREE.MeshStandardMaterial({
+    color: 0x101323,
+    roughness: 0.3,
+    metalness: 0.5
 });
 
-const roadMaterial = new THREE.MeshStandardMaterial({
-    color: 0x171923,
-    roughness: 0.8
+const purpleMat = new THREE.MeshStandardMaterial({
+    color: 0x8b00ff,
+    emissive: 0x8b00ff,
+    emissiveIntensity: 2
 });
 
-const laneMaterial = new THREE.MeshBasicMaterial({
-    color: 0x8c68ff
+const blueMat = new THREE.MeshStandardMaterial({
+    color: 0x0088ff,
+    emissive: 0x0088ff,
+    emissiveIntensity: 2
 });
 
-const purpleMaterial = new THREE.MeshStandardMaterial({
-    color: 0x6c2bd9,
-    emissive: 0x3c087c,
-    emissiveIntensity: 1.2
+const whiteMat = new THREE.MeshBasicMaterial({
+    color: 0xffffff
 });
 
-const blueMaterial = new THREE.MeshStandardMaterial({
-    color: 0x087cff,
-    emissive: 0x063caa,
-    emissiveIntensity: 1.1
-});
-
-// ================= GROUND AND ROAD =================
+// ======================================
+// GROUND
+// ======================================
 
 const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(240, 400),
-    groundMaterial
+    new THREE.PlaneGeometry(250, 450),
+    new THREE.MeshStandardMaterial({
+        color: 0x080d21,
+        roughness: 0.9
+    })
 );
 
 ground.rotation.x = -Math.PI / 2;
-ground.position.set(0, -0.12, -100);
-ground.receiveShadow = true;
+ground.position.set(0, -0.15, -120);
 scene.add(ground);
 
+// ======================================
+// ROAD
+// ======================================
+
 const road = new THREE.Mesh(
-    new THREE.PlaneGeometry(12, 400),
-    roadMaterial
+    new THREE.PlaneGeometry(12, 450),
+    roadMat
 );
 
 road.rotation.x = -Math.PI / 2;
-road.position.set(0, 0, -100);
+road.position.set(0, 0, -120);
 road.receiveShadow = true;
 scene.add(road);
 
-// Neon road edges
-function createRoadEdge(x, material) {
-    const edge = new THREE.Mesh(
-        new THREE.BoxGeometry(0.08, 0.08, 400),
+// Road edges
+function createBox(w, h, d, material, x, y, z, parent = scene) {
+    const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(w, h, d),
         material
     );
 
-    edge.position.set(x, 0.05, -100);
-    scene.add(edge);
+    mesh.position.set(x, y, z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    parent.add(mesh);
+
+    return mesh;
 }
 
-createRoadEdge(-6, purpleMaterial);
-createRoadEdge(6, blueMaterial);
+createBox(0.12, 0.12, 450, purpleMat, -6, 0.08, -120);
+createBox(0.12, 0.12, 450, blueMat, 6, 0.08, -120);
 
 // Lane markings
 const laneDashes = [];
 
-for (let laneX of [-2, 2]) {
-    for (let i = 0; i < 35; i++) {
-        const dash = new THREE.Mesh(
-            new THREE.BoxGeometry(0.055, 0.025, 2.4),
-            laneMaterial
+for (const x of [-2, 2]) {
+    for (let i = 0; i < 45; i++) {
+        const dash = createBox(
+            0.08, 0.035, 3,
+            whiteMat,
+            x, 0.035, -i * 8
         );
 
-        dash.position.set(laneX, 0.025, -i * 8);
-        scene.add(dash);
         laneDashes.push(dash);
     }
 }
 
-// ================= CITY BUILDINGS =================
+// ======================================
+// GUARD RAILS
+// ======================================
+
+for (const side of [-1, 1]) {
+    createBox(
+        0.35, 0.5, 450,
+        new THREE.MeshStandardMaterial({
+            color: 0x25294d,
+            metalness: 0.8
+        }),
+        side * 7, 0.25, -120
+    );
+
+    createBox(
+        0.12, 0.12, 450,
+        side === -1 ? purpleMat : blueMat,
+        side * 7, 0.55, -120
+    );
+}
+
+// ======================================
+// MOON
+// ======================================
+
+const moon = new THREE.Mesh(
+    new THREE.SphereGeometry(5, 32, 32),
+    new THREE.MeshBasicMaterial({
+        color: 0xc9dcff
+    })
+);
+
+moon.position.set(20, 23, -85);
+scene.add(moon);
+
+// Moon glow
+const moonGlow = new THREE.PointLight(0x8abaff, 80, 90);
+moonGlow.position.copy(moon.position);
+scene.add(moonGlow);
+
+// ======================================
+// STARS
+// ======================================
+
+const starGeometry = new THREE.BufferGeometry();
+const starPositions = [];
+
+for (let i = 0; i < 900; i++) {
+    starPositions.push(
+        (Math.random() - 0.5) * 220,
+        8 + Math.random() * 65,
+        -Math.random() * 200
+    );
+}
+
+starGeometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(starPositions, 3)
+);
+
+const stars = new THREE.Points(
+    starGeometry,
+    new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.22
+    })
+);
+
+scene.add(stars);
+
+// ======================================
+// CITY BUILDINGS
+// ======================================
 
 const buildings = [];
 
 function createBuilding(x, z) {
-    const height = 5 + Math.random() * 19;
-    const width = 3 + Math.random() * 4;
-    const depth = 4 + Math.random() * 6;
+    const height = 7 + Math.random() * 22;
+    const width = 3 + Math.random() * 3;
+    const depth = 4 + Math.random() * 3;
+
+    const group = new THREE.Group();
 
     const buildingMaterial = new THREE.MeshStandardMaterial({
-        color: new THREE.Color().setHSL(
-            0.62 + Math.random() * 0.08,
-            0.35,
-            0.12 + Math.random() * 0.08
-        ),
-        metalness: 0.45,
-        roughness: 0.65
+        color: 0x111a3b,
+        metalness: 0.7,
+        roughness: 0.4
     });
 
-    const building = new THREE.Mesh(
-        new THREE.BoxGeometry(width, height, depth),
-        buildingMaterial
+    const building = createBox(
+        width,
+        height,
+        depth,
+        buildingMaterial,
+        0,
+        height / 2,
+        0,
+        group
     );
 
-    building.position.set(x, height / 2 - 0.1, z);
-    building.castShadow = true;
-    building.receiveShadow = true;
-    scene.add(building);
-
-    buildings.push({
-        mesh: building,
-        height: height,
-        width: width,
-        depth: depth,
-        side: x < 0 ? -1 : 1
-    });
-
-    // Neon rooftop trim
-    const trim = new THREE.Mesh(
-        new THREE.BoxGeometry(width + 0.1, 0.07, depth + 0.1),
-        Math.random() > 0.5 ? purpleMaterial : blueMaterial
+    // Rooftop neon
+    createBox(
+        width + 0.15,
+        0.12,
+        depth + 0.15,
+        Math.random() > 0.5 ? purpleMat : blueMat,
+        0,
+        height,
+        0,
+        group
     );
 
-    trim.position.set(x, height, z);
-    scene.add(trim);
+    // Windows facing the road
+    for (let y = 1.5; y < height - 1; y += 2.2) {
+        for (let wx = -width / 2 + 0.7; wx < width / 2; wx += 1) {
+            const windowMaterial = new THREE.MeshBasicMaterial({
+                color: Math.random() > 0.5 ? 0x9b55ff : 0x00baff
+            });
 
-    // Glowing windows on the front-facing side
-    const windowMaterial = new THREE.MeshBasicMaterial({
-        color: Math.random() > 0.5 ? 0x9d7bff : 0x38aaff
-    });
-
-    for (let y = 1.5; y < height - 1; y += 2.5) {
-        for (let wx = -width / 2 + 0.6; wx < width / 2; wx += 1.1) {
-            const windowMesh = new THREE.Mesh(
-                new THREE.BoxGeometry(0.42, 0.65, 0.035),
-                windowMaterial
-            );
-
-            windowMesh.position.set(
-                x + wx,
+            createBox(
+                0.4,
+                0.65,
+                0.04,
+                windowMaterial,
+                wx,
                 y,
-                z + depth / 2 + 0.025
+                depth / 2 + 0.03,
+                group
             );
-
-            scene.add(windowMesh);
         }
+    }
+
+    group.position.set(x, 0, z);
+    scene.add(group);
+
+    buildings.push(group);
+}
+
+for (let i = 0; i < 38; i++) {
+    const z = -i * 11 - 15;
+
+    createBuilding(-12 - Math.random() * 5, z);
+    createBuilding(12 + Math.random() * 5, z - 5);
+}
+
+// ======================================
+// NEON ARROWS
+// ======================================
+
+for (const side of [-1, 1]) {
+    for (let i = 0; i < 10; i++) {
+        const arrow = new THREE.Group();
+
+        const arrowMaterial = side === -1 ? purpleMat : blueMat;
+
+        createBox(0.25, 0.25, 0.25, arrowMaterial, 0, 0, 0, arrow);
+
+        const wing1 = createBox(
+            0.25, 0.25, 0.25,
+            arrowMaterial, -0.25, 0, 0, arrow
+        );
+
+        wing1.rotation.z = Math.PI / 4;
+
+        const wing2 = createBox(
+            0.25, 0.25, 0.25,
+            arrowMaterial, 0.25, 0, 0, arrow
+        );
+
+        wing2.rotation.z = -Math.PI / 4;
+
+        arrow.position.set(side * 7.8, 2, -i * 25 - 10);
+        scene.add(arrow);
     }
 }
 
-for (let i = 0; i < 32; i++) {
-    const z = -i * 12 - 10;
-
-    createBuilding(-11 - Math.random() * 5, z);
-    createBuilding(11 + Math.random() * 5, z - 5);
-}
-
-// ================= TREES =================
-
-const trees = [];
-
-function createTree(x, z) {
-    const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.12, 0.18, 1.6, 8),
-        new THREE.MeshStandardMaterial({ color: 0x45302b })
-    );
-
-    trunk.position.set(x, 0.8, z);
-    scene.add(trunk);
-
-    const leaves = new THREE.Mesh(
-        new THREE.ConeGeometry(1.05, 2.5, 8),
-        new THREE.MeshStandardMaterial({
-            color: 0x123c37,
-            emissive: 0x031d21
-        })
-    );
-
-    leaves.position.set(x, 2.5, z);
-    scene.add(leaves);
-
-    trees.push({ trunk, leaves });
-}
-
-for (let i = 0; i < 24; i++) {
-    const z = -i * 15 - 5;
-    createTree(-7.8, z);
-    createTree(7.8, z - 7);
-}
-
-// ================= STREETLIGHTS =================
+// ======================================
+// STREETLIGHTS
+// ======================================
 
 const streetlights = [];
 
 function createStreetlight(x, z) {
-    const pole = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.06, 0.09, 5, 8),
-        new THREE.MeshStandardMaterial({ color: 0x30374f })
+    const group = new THREE.Group();
+
+    createBox(
+        0.12, 5, 0.12,
+        new THREE.MeshStandardMaterial({ color: 0x41486b }),
+        0, 2.5, 0, group
     );
 
-    pole.position.set(x, 2.5, z);
-    scene.add(pole);
-
-    const arm = new THREE.Mesh(
-        new THREE.BoxGeometry(1.2, 0.08, 0.08),
-        new THREE.MeshStandardMaterial({ color: 0x424966 })
+    createBox(
+        1.3, 0.12, 0.12,
+        new THREE.MeshStandardMaterial({ color: 0x41486b }),
+        -Math.sign(x) * 0.55, 4.8, 0, group
     );
 
-    arm.position.set(x - Math.sign(x) * 0.5, 4.8, z);
-    scene.add(arm);
-
-    const bulb = new THREE.Mesh(
-        new THREE.BoxGeometry(0.55, 0.12, 0.3),
-        new THREE.MeshBasicMaterial({ color: 0x9c7bff })
+    createBox(
+        0.65, 0.15, 0.4,
+        purpleMat,
+        -Math.sign(x) * 1.05, 4.7, 0, group
     );
 
-    bulb.position.set(x - Math.sign(x) * 0.9, 4.7, z);
-    scene.add(bulb);
+    group.position.set(x, 0, z);
+    scene.add(group);
 
-    streetlights.push({ pole, arm, bulb });
+    streetlights.push(group);
 }
 
 for (let i = 0; i < 18; i++) {
-    const z = -i * 20 - 10;
-    createStreetlight(-7, z);
-    createStreetlight(7, z - 10);
+    createStreetlight(-7.8, -i * 22 - 10);
+    createStreetlight(7.8, -i * 22 - 20);
 }
 
-// ================= CAR CREATION =================
+// ======================================
+// TREES
+// ======================================
 
-function createCar(color, isPlayer = false) {
-    const car = new THREE.Group();
+const trees = [];
 
-    const bodyMaterial = new THREE.MeshStandardMaterial({
-        color: color,
-        metalness: 0.72,
-        roughness: 0.28
-    });
+function createTree(x, z) {
+    const group = new THREE.Group();
 
-    const body = new THREE.Mesh(
-        new THREE.BoxGeometry(1.65, 0.55, 3.1),
-        bodyMaterial
+    const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.12, 0.2, 1.5, 8),
+        new THREE.MeshStandardMaterial({ color: 0x57382c })
     );
 
-    body.position.y = 0.62;
-    body.castShadow = true;
-    car.add(body);
+    trunk.position.y = 0.75;
+    group.add(trunk);
 
-    const hood = new THREE.Mesh(
-        new THREE.BoxGeometry(1.5, 0.22, 1.05),
-        bodyMaterial
-    );
-
-    hood.position.set(0, 0.88, -0.85);
-    car.add(hood);
-
-    const cabin = new THREE.Mesh(
-        new THREE.BoxGeometry(1.18, 0.58, 1.35),
+    const leaves = new THREE.Mesh(
+        new THREE.ConeGeometry(1.2, 2.7, 8),
         new THREE.MeshStandardMaterial({
-            color: 0x101a2c,
-            metalness: 0.65,
-            roughness: 0.2
+            color: 0x103d37,
+            emissive: 0x05251e
         })
     );
 
-    cabin.position.set(0, 1.12, 0.25);
-    car.add(cabin);
+    leaves.position.y = 2.6;
+    group.add(leaves);
 
-    // Wheels
-    const wheelMaterial = new THREE.MeshStandardMaterial({
-        color: 0x08080c,
-        roughness: 0.8
+    group.position.set(x, 0, z);
+    scene.add(group);
+    trees.push(group);
+}
+
+for (let i = 0; i < 20; i++) {
+    createTree(-8.2, -i * 17);
+    createTree(8.2, -i * 17 - 8);
+}
+
+// ======================================
+// CAR CREATION
+// ======================================
+
+function createCar(color) {
+    const car = new THREE.Group();
+
+    const bodyMat = new THREE.MeshStandardMaterial({
+        color: color,
+        metalness: 0.8,
+        roughness: 0.22
     });
 
-    for (const x of [-0.86, 0.86]) {
-        for (const z of [-0.95, 0.95]) {
+    const glassMat = new THREE.MeshStandardMaterial({
+        color: 0x101a39,
+        metalness: 0.8,
+        roughness: 0.1
+    });
+
+    // Main body
+    createBox(1.8, 0.55, 3.3, bodyMat, 0, 0.65, 0, car);
+
+    // Front hood
+    createBox(1.7, 0.2, 1, bodyMat, 0, 0.95, -1.05, car);
+
+    // Cabin
+    createBox(1.3, 0.65, 1.5, glassMat, 0, 1.15, 0.25, car);
+
+    // Roof
+    createBox(1.25, 0.1, 1.2, bodyMat, 0, 1.5, 0.25, car);
+
+    // Front bumper
+    createBox(1.7, 0.2, 0.15, bodyMat, 0, 0.4, -1.68, car);
+
+    // Rear bumper
+    createBox(1.7, 0.2, 0.15, bodyMat, 0, 0.4, 1.68, car);
+
+    // Wheels
+    const wheelMat = new THREE.MeshStandardMaterial({
+        color: 0x050505,
+        roughness: 0.9
+    });
+
+    for (const x of [-0.92, 0.92]) {
+        for (const z of [-1, 1]) {
             const wheel = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.31, 0.31, 0.18, 16),
-                wheelMaterial
+                new THREE.CylinderGeometry(0.34, 0.34, 0.2, 20),
+                wheelMat
             );
 
             wheel.rotation.z = Math.PI / 2;
-            wheel.position.set(x, 0.35, z);
+            wheel.position.set(x, 0.38, z);
             car.add(wheel);
         }
     }
 
+    // Headlights
+    for (const x of [-0.55, 0.55]) {
+        createBox(
+            0.35, 0.15, 0.08,
+            whiteMat, x, 0.78, -1.7, car
+        );
+    }
+
     // Rear lights
-    const rearLightMaterial = new THREE.MeshBasicMaterial({
-        color: isPlayer ? 0xff1744 : 0xff3333
+    for (const x of [-0.55, 0.55]) {
+        createBox(
+            0.4, 0.16, 0.08,
+            new THREE.MeshBasicMaterial({ color: 0xff003c }),
+            x, 0.8, 1.7, car
+        );
+    }
+
+    // Rear spoiler
+    createBox(2, 0.12, 0.3, bodyMat, 0, 1.15, 1.4, car);
+
+    // Neon underglow
+    const glow = new THREE.PointLight(color, 12, 5);
+    glow.position.set(0, 0.3, 0);
+    car.add(glow);
+
+    car.traverse(object => {
+        if (object.isMesh) object.castShadow = true;
     });
-
-    for (const x of [-0.52, 0.52]) {
-        const light = new THREE.Mesh(
-            new THREE.BoxGeometry(0.32, 0.13, 0.06),
-            rearLightMaterial
-        );
-
-        light.position.set(x, 0.75, 1.57);
-        car.add(light);
-    }
-
-    // Front lights
-    for (const x of [-0.52, 0.52]) {
-        const light = new THREE.Mesh(
-            new THREE.BoxGeometry(0.3, 0.12, 0.06),
-            new THREE.MeshBasicMaterial({ color: 0xc8eaff })
-        );
-
-        light.position.set(x, 0.75, -1.57);
-        car.add(light);
-    }
 
     return car;
 }
 
-// Three lanes
-const lanePositions = [-4, 0, 4];
+// ======================================
+// PLAYER CAR
+// ======================================
+
+const lanes = [-4, 0, 4];
 
 let playerLane = 1;
-const player = createCar(0xe11d48, true);
 
-player.position.set(lanePositions[playerLane], 0, 4);
+const player = createCar(0xff003c);
+player.position.set(0, 0, 5);
+
 scene.add(player);
 
-// ================= TRAFFIC =================
+// ======================================
+// TRAFFIC CARS
+// ======================================
 
 const trafficCars = [];
+
 const trafficColors = [
     0x1677ff,
-    0xf59e0b,
-    0x22c55e,
-    0xe5e7eb,
-    0x9333ea,
-    0xf43f5e
+    0xffaa00,
+    0x00dd99,
+    0xffffff,
+    0xa855f7
 ];
 
 function spawnTraffic(z) {
     const lane = Math.floor(Math.random() * 3);
+
     const color = trafficColors[
         Math.floor(Math.random() * trafficColors.length)
     ];
 
     const car = createCar(color);
-    car.position.set(lanePositions[lane], 0, z);
+
+    car.scale.setScalar(0.85);
+    car.position.set(lanes[lane], 0, z);
+
     scene.add(car);
 
-    trafficCars.push({ mesh: car, lane: lane });
+    trafficCars.push({ mesh: car });
 }
 
-for (let i = 0; i < 7; i++) {
-    spawnTraffic(-35 - i * 27);
+for (let i = 0; i < 6; i++) {
+    spawnTraffic(-45 - i * 32);
 }
 
-// ================= COINS =================
-
-const coinMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffd700,
-    metalness: 0.85,
-    roughness: 0.2,
-    emissive: 0x6b3900,
-    emissiveIntensity: 0.5
-});
+// ======================================
+// GOLD COINS
+// ======================================
 
 const coins = [];
 
@@ -438,35 +562,45 @@ function spawnCoin(z) {
     const lane = Math.floor(Math.random() * 3);
 
     const coin = new THREE.Mesh(
-        new THREE.TorusGeometry(0.42, 0.13, 10, 20),
-        coinMaterial
+        new THREE.TorusGeometry(0.45, 0.14, 12, 24),
+        new THREE.MeshStandardMaterial({
+            color: 0xffd700,
+            metalness: 0.9,
+            roughness: 0.15,
+            emissive: 0x995500,
+            emissiveIntensity: 0.8
+        })
     );
 
-    coin.position.set(lanePositions[lane], 1.15, z);
+    coin.position.set(lanes[lane], 1.4, z);
     scene.add(coin);
 
-    coins.push({ mesh: coin, lane: lane });
+    coins.push(coin);
 }
 
-for (let i = 0; i < 18; i++) {
-    spawnCoin(-22 - i * 17);
+for (let i = 0; i < 15; i++) {
+    spawnCoin(-30 - i * 22);
 }
 
-// ================= GAME STATE =================
+// ======================================
+// GAME VARIABLES
+// ======================================
 
 let score = 0;
 let coinCount = 0;
-let speed = 4;
+let speed = 10;
+
 let paused = false;
 let gameOver = false;
-let lastTime = 0;
+
 let spawnTimer = 0;
 let coinTimer = 0;
+let lastTime = 0;
 
 function updateHUD() {
-    scoreElement.textContent = "SCORE: " + score;
-    coinsElement.textContent = "COINS: " + coinCount;
-    speedElement.textContent = "SPEED: " + speed.toFixed(1);
+    scoreEl.textContent = "SCORE: " + score;
+    coinsEl.textContent = "COINS: " + coinCount;
+    speedEl.textContent = "SPEED: " + speed.toFixed(1);
 }
 
 function showMessage(title, text) {
@@ -479,19 +613,21 @@ function hideMessage() {
     message.classList.remove("show");
 }
 
-// ================= PLAYER CONTROLS =================
+// ======================================
+// PLAYER CONTROLS
+// ======================================
 
 function changeLane(direction) {
     if (paused || gameOver) return;
 
-    playerLane += direction;
-    playerLane = Math.max(0, Math.min(2, playerLane));
+    playerLane = Math.max(
+        0,
+        Math.min(2, playerLane + direction)
+    );
 }
 
-window.addEventListener("keydown", (event) => {
-    if (
-        ["ArrowLeft", "ArrowRight", " "].includes(event.key)
-    ) {
+window.addEventListener("keydown", event => {
+    if (["ArrowLeft", "ArrowRight", " "].includes(event.key)) {
         event.preventDefault();
     }
 
@@ -503,12 +639,35 @@ window.addEventListener("keydown", (event) => {
         changeLane(1);
     }
 
-    if (event.key === " " && !gameOver) {
+    if (event.code === "Space" && !gameOver) {
         paused ? resumeGame() : pauseGame();
     }
 });
 
-// ================= PAUSE AND RESTART =================
+// ======================================
+// COLLISION
+// ======================================
+
+function collision(a, b) {
+    return (
+        Math.abs(a.position.x - b.position.x) < 1.5 &&
+        Math.abs(a.position.z - b.position.z) < 2.2
+    );
+}
+
+function endGame() {
+    gameOver = true;
+    paused = true;
+
+    showMessage(
+        "GAME OVER",
+        "Score: " + score + " | Press Restart to play again"
+    );
+}
+
+// ======================================
+// PAUSE / RESUME / RESTART
+// ======================================
 
 function pauseGame() {
     if (gameOver) return;
@@ -526,97 +685,119 @@ function resumeGame() {
 
 function resetGame() {
     trafficCars.forEach(car => scene.remove(car.mesh));
-    coins.forEach(coin => scene.remove(coin.mesh));
+    coins.forEach(coin => scene.remove(coin));
 
     trafficCars.length = 0;
     coins.length = 0;
 
     score = 0;
     coinCount = 0;
-    speed = 4;
+    speed = 10;
+
     playerLane = 1;
+    player.position.set(0, 0, 5);
+
     spawnTimer = 0;
     coinTimer = 0;
+
     paused = false;
     gameOver = false;
 
-    player.position.set(lanePositions[playerLane], 0, 4);
-
-    for (let i = 0; i < 7; i++) {
-        spawnTraffic(-35 - i * 27);
+    for (let i = 0; i < 6; i++) {
+        spawnTraffic(-45 - i * 32);
     }
 
-    for (let i = 0; i < 18; i++) {
-        spawnCoin(-22 - i * 17);
+    for (let i = 0; i < 15; i++) {
+        spawnCoin(-30 - i * 22);
     }
 
     hideMessage();
     updateHUD();
 }
 
-document.getElementById("pause-btn").addEventListener("click", pauseGame);
-document.getElementById("resume-btn").addEventListener("click", resumeGame);
-document.getElementById("restart-btn").addEventListener("click", resetGame);
+document.getElementById("pause-btn").onclick = pauseGame;
+document.getElementById("resume-btn").onclick = resumeGame;
+document.getElementById("restart-btn").onclick = resetGame;
 
-// ================= COLLISION DETECTION =================
-
-function checkCollision(a, b) {
-    return (
-        Math.abs(a.position.x - b.position.x) < 1.45 &&
-        Math.abs(a.position.z - b.position.z) < 2.2
-    );
-}
-
-function endGame() {
-    gameOver = true;
-    paused = true;
-    showMessage("GAME OVER", "Score: " + score + " | Press Restart to play again");
-}
-
-// ================= ANIMATION =================
+// ======================================
+// MAIN GAME ANIMATION
+// ======================================
 
 function animate(time = 0) {
     requestAnimationFrame(animate);
 
-    const delta = Math.min((time - lastTime) / 16.67 || 1, 2);
+    const delta = Math.min(
+        (time - lastTime) / 1000 || 0.016,
+        0.05
+    );
+
     lastTime = time;
 
     if (!paused && !gameOver) {
-        // Move player smoothly between lanes
-        const targetX = lanePositions[playerLane];
-        player.position.x += (targetX - player.position.x) * 0.18 * delta;
 
-        // Slight car movement
-        player.rotation.z = (targetX - player.position.x) * 0.025;
+        // Player movement
+        const targetX = lanes[playerLane];
 
-        // Increase score and speed over time
-        score += Math.max(1, Math.floor(delta));
-        speed = Math.min(12, 4 + score / 350);
+        player.position.x +=
+            (targetX - player.position.x) * 10 * delta;
 
-        const movement = speed * 0.15 * delta;
+        player.rotation.z =
+            (targetX - player.position.x) * 0.04;
 
-        // Road markings move toward the player
+        // Score and speed
+        score += Math.floor(delta * 10);
+        speed = Math.min(25, 10 + score / 100);
+
+        const movement = speed * delta * 3;
+
+        // Road markings
         laneDashes.forEach(dash => {
             dash.position.z += movement;
 
             if (dash.position.z > 12) {
-                dash.position.z -= 280;
+                dash.position.z -= 360;
             }
         });
 
-        // Traffic movement and collisions
+        // City movement
+        buildings.forEach(building => {
+            building.position.z += movement;
+
+            if (building.position.z > 25) {
+                building.position.z -= 420;
+            }
+        });
+
+        streetlights.forEach(light => {
+            light.position.z += movement;
+
+            if (light.position.z > 25) {
+                light.position.z -= 396;
+            }
+        });
+
+        trees.forEach(tree => {
+            tree.position.z += movement;
+
+            if (tree.position.z > 20) {
+                tree.position.z -= 340;
+            }
+        });
+
+        // Traffic
         spawnTimer += delta;
 
-        if (spawnTimer > 42) {
+        if (spawnTimer > 2.5) {
             spawnTraffic(-190);
             spawnTimer = 0;
         }
 
         for (let i = trafficCars.length - 1; i >= 0; i--) {
             const car = trafficCars[i];
+
             car.mesh.position.z += movement;
 
-            if (checkCollision(player, car.mesh)) {
+            if (collision(player, car.mesh)) {
                 endGame();
                 break;
             }
@@ -627,71 +808,37 @@ function animate(time = 0) {
             }
         }
 
-        // Coin movement and collection
+        // Coins
         coinTimer += delta;
 
-        if (coinTimer > 30) {
-            spawnCoin(-190);
+        if (coinTimer > 1.8) {
+            spawnCoin(-180);
             coinTimer = 0;
         }
 
         for (let i = coins.length - 1; i >= 0; i--) {
             const coin = coins[i];
 
-            coin.mesh.position.z += movement;
-            coin.mesh.rotation.y += 0.08 * delta;
-            coin.mesh.rotation.x += 0.015 * delta;
+            coin.position.z += movement;
+            coin.rotation.y += delta * 3;
 
             if (
-                Math.abs(player.position.x - coin.mesh.position.x) < 1.4 &&
-                Math.abs(player.position.z - coin.mesh.position.z) < 2
+                Math.abs(player.position.x - coin.position.x) < 1.4 &&
+                Math.abs(player.position.z - coin.position.z) < 2
             ) {
                 coinCount++;
                 score += 10;
 
-                scene.remove(coin.mesh);
+                scene.remove(coin);
                 coins.splice(i, 1);
                 continue;
             }
 
-            if (coin.mesh.position.z > 15) {
-                scene.remove(coin.mesh);
+            if (coin.position.z > 15) {
+                scene.remove(coin);
                 coins.splice(i, 1);
             }
         }
-
-        // Animate neon city scenery
-        buildings.forEach(building => {
-            building.mesh.position.z += movement;
-
-            if (building.mesh.position.z > 25) {
-                building.mesh.position.z -= 384;
-            }
-        });
-
-        // Move trees
-        trees.forEach(tree => {
-            tree.trunk.position.z += movement;
-            tree.leaves.position.z += movement;
-
-            if (tree.trunk.position.z > 20) {
-                tree.trunk.position.z -= 360;
-                tree.leaves.position.z -= 360;
-            }
-        });
-
-        // Move streetlights
-        streetlights.forEach(light => {
-            light.pole.position.z += movement;
-            light.arm.position.z += movement;
-            light.bulb.position.z += movement;
-
-            if (light.pole.position.z > 25) {
-                light.pole.position.z -= 360;
-                light.arm.position.z -= 360;
-                light.bulb.position.z -= 360;
-            }
-        });
 
         updateHUD();
     }
@@ -699,6 +846,10 @@ function animate(time = 0) {
     renderer.render(scene, camera);
 }
 
-// Start game
+// ======================================
+// START GAME
+// ======================================
+
 updateHUD();
+resize();
 animate();
