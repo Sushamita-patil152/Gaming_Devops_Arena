@@ -1,53 +1,35 @@
 pipeline {
     agent any
-
     environment {
-        APP_NAME  = 'devops-arena'
-        IMAGE_TAG = "v${BUILD_NUMBER}"
-        PORT      = '80'
+        DOCKER_IMAGE = "sushamita152/devops-arena"
     }
-
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-
-        stage('Verify Files') {
+        stage('Build') {
+            steps {
+                sh 'docker build -t $DOCKER_IMAGE:latest .'
+            }
+        }
+        stage('Push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
+                    sh 'docker push $DOCKER_IMAGE:latest'
+                }
+            }
+        }
+        stage('Deploy') {
             steps {
                 sh '''
-                    test -f index.html
-                    test -f style.css
-                    test -f script.js
-                    test -f Dockerfile
+                docker stop devops-arena || true
+                docker rm devops-arena || true
+                docker run -d --name devops-arena -p 80:80 $DOCKER_IMAGE:latest
                 '''
             }
-        }
-
-        stage('Docker Build') {
-            steps {
-                sh "docker build -t ${APP_NAME}:${IMAGE_TAG} -t ${APP_NAME}:latest ."
-            }
-        }
-
-        stage('Docker Deploy') {
-            steps {
-                sh '''
-                    docker stop ${APP_NAME} || true
-                    docker rm ${APP_NAME} || true
-                    docker run -d --name ${APP_NAME} -p ${PORT}:80 ${APP_NAME}:latest
-                '''
-            }
-        }
-    }
-
-    post {
-        success {
-            echo "Pipeline deployed successfully."
-        }
-        failure {
-            echo "Pipeline failed. Check build logs."
         }
     }
 }
