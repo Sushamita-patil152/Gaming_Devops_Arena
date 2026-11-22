@@ -2,6 +2,8 @@ pipeline {
     agent any
     environment {
         DOCKER_IMAGE = "sushamita152/devops-arena"
+        IMAGE_TAG="seebamaldar"
+
     }
     stages {
         stage('Checkout') {
