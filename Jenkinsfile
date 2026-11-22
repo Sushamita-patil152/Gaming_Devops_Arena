@@ -16,14 +16,35 @@ pipeline {
                 sh 'docker build -t $DOCKER_IMAGE:latest .'
             }
         }
-        stage('Push') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    sh 'echo $PASS | docker login -u $USER --password-stdin'
-                    sh 'docker push $DOCKER_IMAGE:latest'
-                }
-            }
+       stage('Push') {
+    steps {
+        // Push to your account
+        withCredentials([usernamePassword(
+            credentialsId: 'dockerhub-creds',
+            usernameVariable: 'USER1',
+            passwordVariable: 'PASS1'
+        )]) {
+            sh '''
+                echo "$PASS1" | docker login -u "$USER1" --password-stdin
+                docker tag sushamita152/devops-arena:latest seebamaldar/devops-arena:latest
+                docker push seebamaldar/devops-arena:latest
+            '''
         }
+
+        // Push to friend's account
+        withCredentials([usernamePassword(
+            credentialsId: 'dockerhub-friend',
+            usernameVariable: 'USER2',
+            passwordVariable: 'PASS2'
+        )]) {
+            sh '''
+                echo "$PASS2" | docker login -u "$USER2" --password-stdin
+                docker tag sushamita152/devops-arena:latest sushamita152/devops-arena:latest
+                docker push sushamita152/devops-arena:latest
+            '''
+        }
+    }
+}
         stage('Deploy') {
             steps {
                 sh '''
