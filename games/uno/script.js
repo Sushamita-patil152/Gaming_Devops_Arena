@@ -86,6 +86,10 @@ soundBtn.addEventListener('click', () => {
 
 const COLORS = ['Red', 'Yellow', 'Green', 'Blue'];
 
+function generateId() {
+  return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+}
+
 class UnoGame {
   constructor() {
     this.deck = [];
@@ -147,20 +151,20 @@ class UnoGame {
   buildDeck() {
     const deck = [];
     COLORS.forEach(color => {
-      deck.push({ color, value: '0', id: crypto.randomUUID() });
+      deck.push({ color, value: '0', id: generateId() });
       for (let i = 1; i <= 9; i++) {
-        deck.push({ color, value: i.toString(), id: crypto.randomUUID() });
-        deck.push({ color, value: i.toString(), id: crypto.randomUUID() });
+        deck.push({ color, value: i.toString(), id: generateId() });
+        deck.push({ color, value: i.toString(), id: generateId() });
       }
       ['Skip', 'Reverse', 'Draw Two'].forEach(act => {
-        deck.push({ color, value: act, id: crypto.randomUUID() });
-        deck.push({ color, value: act, id: crypto.randomUUID() });
+        deck.push({ color, value: act, id: generateId() });
+        deck.push({ color, value: act, id: generateId() });
       });
     });
 
     for (let i = 0; i < 4; i++) {
-      deck.push({ color: 'Wild', value: 'Wild', id: crypto.randomUUID() });
-      deck.push({ color: 'Wild', value: 'Wild Draw Four', id: crypto.randomUUID() });
+      deck.push({ color: 'Wild', value: 'Wild', id: generateId() });
+      deck.push({ color: 'Wild', value: 'Wild Draw Four', id: generateId() });
     }
 
     for (let i = deck.length - 1; i > 0; i--) {
