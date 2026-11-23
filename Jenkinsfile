@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "seebamaldar/devops-arena"
+        MY_IMAGE = "sushamita152/devops-arena"
+        FRIEND_IMAGE = "seebamaldar/devops-arena"
     }
 
     stages {
@@ -14,11 +15,12 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE:latest .'
+                sh 'docker build -t $MY_IMAGE:latest .'
+                sh 'docker tag $MY_IMAGE:latest $FRIEND_IMAGE:latest'
             }
         }
 
-        stage('Push to My Docker Hub') {
+        stage('Push to Both Accounts') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
@@ -27,7 +29,18 @@ pipeline {
                 )]) {
                     sh '''
                         echo "$PASS1" | docker login -u "$USER1" --password-stdin
-                        docker push $DOCKER_IMAGE:latest
+                        docker push $MY_IMAGE:latest
+                        docker logout
+                    '''
+                }
+                withCredentials([usernamePassword(
+                    credentialsId: 'friend-dockerhub-creds',
+                    usernameVariable: 'USER2',
+                    passwordVariable: 'PASS2'
+                )]) {
+                    sh '''
+                        echo "$PASS2" | docker login -u "$USER2" --password-stdin
+                        docker push $FRIEND_IMAGE:latest
                         docker logout
                     '''
                 }
