@@ -52,7 +52,7 @@ pipeline {
                 sh '''
                     docker stop devops-arena || true
                     docker rm devops-arena || true
-                    docker run -d --name devops-arena -p 80:80 $DOCKER_IMAGE:latest
+                    docker run -d --name devops-arena -p 80:80 $MY_IMAGE:latest
                 '''
             }
         }
